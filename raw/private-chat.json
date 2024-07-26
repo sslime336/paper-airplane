@@ -1,0 +1,14 @@
+{
+    "op": 0,
+    "s": 2,
+    "t": "C2C_MESSAGE_CREATE",
+    "id": "C2C_MESSAGE_CREATE:s2sijncf1fs2yozs3apyxqoqezs4tef7tbumjsmwdfuohchhcigml0xmisoz2",
+    "d": {
+        "author": {
+            "id": "EBBA6E0BF2C1572427EDE9583CE821F9",
+            "user_openid": "EBBA6E0BF2C1572427EDE9583CE821F9"
+        },
+        "content": "df",
+        "id": "ROBOT1.0_UlbhRKLKfP80k6toXX-2qw9b2AQJlFmqp3xFtk.SF0ddMshCdxn1wFdWWxTate.I754CvirUUuArrLJIfJU82A!!"
+    }
+}

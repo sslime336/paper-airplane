@@ -1,0 +1,8 @@
+bot:
+  uin: 123 # 机器人QQ号
+  appId: 123
+  token: string1
+  secret: string2
+
+log:
+  path: ./log/bot.log

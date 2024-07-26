@@ -1,0 +1,17 @@
+{
+    "op": 0,
+    "s": 2,
+    "t": "GROUP_AT_MESSAGE_CREATE",
+    "id": "GROUP_AT_MESSAGE_CREATE:tyta0guimgzitktymprkles8pae6asxdorqscrrjbuv957wseidnfe0ixfc6s",
+    "d": {
+        "author": {
+            "id": "EBBA6E0BF2C1572427EDE9583CE821F9",
+            "member_openid": "EBBA6E0BF2C1572427EDE9583CE821F9"
+        },
+        "content": " /ping ",
+        "group_id": "3F6A0BA2437504D7DC6F2192FF44BB1B",
+        "group_openid": "3F6A0BA2437504D7DC6F2192FF44BB1B",
+        "id": "ROBOT1.0_TYTA.0GuImG.ZitktympRs.NXr73lUOQUMVhMu5yds8OUmACIlJnMk89sOMrl7VlbwB3vhaMG35Hi2Lf5qPZXg!!",
+        "timestamp": "2024-07-26T22:48:44+08:00"
+    }
+}
