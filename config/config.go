@@ -6,11 +6,17 @@ import (
 	"github.com/spf13/viper"
 )
 
-var appConfig AppConfig
+var App struct {
+	Bot   BotConf   `yaml:"bot"`
+	Log   LogConf   `yaml:"log"`
+	Spark SparkConf `yaml:"spark"`
+}
 
-type AppConfig struct {
-	Bot BotConf `yaml:"bot"`
-	Log LogConf `yaml:"log"`
+type SparkConf struct {
+	Mode      string `yaml:"mode"`
+	AppId     string `yaml:"appId"`
+	ApiSecret string `yaml:"apiSecret"`
+	ApiKey    string `yaml:"apiKey"`
 }
 
 type BotConf struct {
@@ -31,17 +37,5 @@ func Init() {
 	if err != nil {
 		log.Fatal("read in config failed:", err)
 	}
-	viper.Unmarshal(&appConfig)
-}
-
-func Bot() BotConf {
-	return appConfig.Bot
-}
-
-func Log() LogConf {
-	return appConfig.Log
-}
-
-func App() AppConfig {
-	return appConfig
+	viper.Unmarshal(&App)
 }

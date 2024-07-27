@@ -2,9 +2,11 @@ package main
 
 import (
 	"context"
+	"paper-airplane/bot"
 	"paper-airplane/config"
 	"paper-airplane/handler"
 	"paper-airplane/logging"
+	"paper-airplane/service"
 	"time"
 
 	"github.com/tencent-connect/botgo"
@@ -16,13 +18,14 @@ import (
 func init() {
 	config.Init()
 	logging.Init()
+	service.Init()
 }
 
 func main() {
-	conf := config.Bot()
+	conf := config.App.Bot
 	token := token.BotToken(conf.AppId, conf.Token)
 	api := botgo.NewSandboxOpenAPI(token).WithTimeout(3 * time.Second)
-	handler.RegisterApi(api)
+	bot.BuildClient(api)
 
 	botgo.SetLogger(logging.Logger().Sugar())
 

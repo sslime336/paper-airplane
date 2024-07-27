@@ -4,5 +4,11 @@ bot:
   token: string1
   secret: string2
 
+spark:
+  mode: Spark Lite
+  appId: abc
+  apiSecret: abc
+  apiKey: abc
+
 log:
-  path: ./log/bot.log
+  path: ./log/
