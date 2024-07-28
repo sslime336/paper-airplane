@@ -1,14 +1,18 @@
 bot:
-  uin: 123 # 机器人QQ号
-  appId: 123
-  token: string1
-  secret: string2
+  uin: 111 # 机器人QQ号
+  appId: 111
+  token: abc
+  secret: abc
+
+database:
+  sqlite:
+    path: session.db
 
 spark:
   mode: Spark Lite
-  appId: abc
-  apiSecret: abc
-  apiKey: abc
+  appId: asd
+  apiSecret: asd
+  apiKey: asd
 
 log:
   path: ./log/

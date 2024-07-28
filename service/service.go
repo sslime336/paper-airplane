@@ -2,11 +2,10 @@ package service
 
 import "paper-airplane/service/spark"
 
-var Spark struct {
-	Send func(string) error
+type SparkAI struct {
+	*spark.Session
 }
 
 func Init() {
 	spark.Init()
-	Spark.Send = spark.Send
 }

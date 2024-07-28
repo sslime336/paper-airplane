@@ -65,7 +65,16 @@ func (gm *GroupAtMessage) MsgId() string {
 	return gm.D.ID
 }
 
-// Content 返回已经移除前后空白字符的消息内容
-func (gm *GroupAtMessage) Content() string {
+// RawContent 返回已经移除前后空白字符的消息内容
+func (gm *GroupAtMessage) RawContent() string {
 	return strings.TrimSpace(gm.D.Content)
+}
+
+// Content 返回移除指令的消息
+func (gm *GroupAtMessage) Content() string {
+	txt := strings.Split(gm.RawContent(), " ")
+	if len(txt) < 2 {
+		return ""
+	}
+	return txt[1]
 }

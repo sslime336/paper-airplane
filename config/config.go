@@ -7,9 +7,18 @@ import (
 )
 
 var App struct {
-	Bot   BotConf   `yaml:"bot"`
-	Log   LogConf   `yaml:"log"`
-	Spark SparkConf `yaml:"spark"`
+	Bot      BotConf   `yaml:"bot"`
+	Log      LogConf   `yaml:"log"`
+	Spark    SparkConf `yaml:"spark"`
+	Database Database  `yaml:"database"`
+}
+
+type Database struct {
+	Sqlite Sqlite `yaml:"sqlite"`
+}
+
+type Sqlite struct {
+	Path string `yaml:"path"`
 }
 
 type SparkConf struct {
