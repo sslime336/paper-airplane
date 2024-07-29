@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/patrickmn/go-cache"
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
@@ -16,9 +17,10 @@ func initCache() {
 	sessionCache = cache.New(8*time.Minute, 30*time.Minute)
 
 	sessionCache.OnEvicted(func(openId string, i any) {
+		log.Debug("session cache out of time", zap.String("session.openId", openId))
 		sess := i.(*Session)
 		mh, _ := json.Marshal(sess.Message)
-		var msess gorm.Session
+		var msess db.Session
 		if err := db.Sqlite.Where("openId = ?", openId).First(&msess).Error; errors.Is(err, gorm.ErrRecordNotFound) {
 			db.Sqlite.Create(&db.Session{
 				OpenId:         openId,

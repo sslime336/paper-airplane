@@ -57,7 +57,12 @@ var ws = websocket.Dialer{
 func (s *Session) Send(msg string) error {
 	r := req.NewSparkLiteRequest(config.App.Spark.AppId)
 
-	s.Conn, _, _ = ws.Dial(buildAuthUrl(HostUrlSparkLite, config.App.Spark.ApiKey, config.App.Spark.ApiSecret), nil)
+	var err error
+	var resp *http.Response
+	if s.Conn, resp, err = ws.Dial(buildAuthUrl(HostUrlSparkLite, config.App.Spark.ApiKey, config.App.Spark.ApiSecret), nil); err != nil {
+		log.Error("create websocket connection failed", zap.String("response", readResp(resp)), zap.Error(err))
+		return err
+	}
 	s.Message.Add(req.Text{
 		Role:    "user",
 		Content: msg,
