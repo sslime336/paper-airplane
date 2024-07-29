@@ -13,11 +13,20 @@ import (
 	"go.uber.org/zap"
 )
 
+var log *zap.Logger
+
+func Init() {
+	group.Init()
+	prvMsg.Init()
+
+	log = logging.Logger().Named("handler")
+}
+
 func Get() event.PlainEventHandler {
 	return func(payload *dto.WSPayload, data []byte) error {
 		var g model.General
 		if err := json.Unmarshal(data, &g); err != nil {
-			logging.Error("failed to decode json", zap.Error(err))
+			log.Error("failed to decode json", zap.Error(err))
 			return nil
 		}
 		switch g.T {

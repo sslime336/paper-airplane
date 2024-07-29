@@ -4,6 +4,7 @@ import (
 	"context"
 	"paper-airplane/bot"
 	"paper-airplane/config"
+	"paper-airplane/db"
 	"paper-airplane/handler"
 	"paper-airplane/logging"
 	"paper-airplane/service"
@@ -18,6 +19,8 @@ import (
 func init() {
 	config.Init()
 	logging.Init()
+	db.Init()
+	handler.Init()
 	service.Init()
 }
 

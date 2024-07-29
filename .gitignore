@@ -2,5 +2,5 @@ build/
 log/
 config.yaml
 *.exe
-session.db
+*.db
 *.json

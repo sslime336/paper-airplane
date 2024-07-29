@@ -10,36 +10,27 @@ import (
 	"go.uber.org/zap"
 )
 
-var sessionMap = map[string]*spark.Session{}
+var log *zap.Logger
+
+func Init() {
+	log = logging.Logger().Named("handler.group")
+}
 
 func Handler(event *dto.WSPayload, data []byte) error {
 	do := bot.ExtractGroupMessage(data)
+	log.Debug("received atGroupMessage", zap.Any("model.GroupAtMessage", *do))
+
 	msgId := do.MsgId()
 	groupOpenId := do.GroupOpenId()
-	memberOpenId := do.D.Author.MemberOpenid
+	// memberOpenId := do.D.Author.MemberOpenid
 
-	// `/ping` 指令
-	if command.Contains(do.RawContent(), command.Ping) {
-		return bot.PaperAirplane.ToGroup(groupOpenId).Reply(msgId, "pong")
-	}
-
-	var session *spark.Session
-	if sess, ok := sessionMap[memberOpenId]; ok {
-		session = sess
-	} else {
-		sessionMap[memberOpenId], _ = spark.NewSparkSession()
-		session = sessionMap[memberOpenId]
-	}
-
-	if command.Contains(do.RawContent(), command.Chat) {
-		session.Send(do.Content())
-		res, err := session.Read()
-		if err != nil {
-			logging.Error("read from spark failed", zap.Error(err))
-			return bot.PaperAirplane.ToGroup(groupOpenId).Reply(msgId, "Spark 读取错误")
+	if cmd, ok := bot.PaperAirplane.ParseCommand(do.RawContent()); ok {
+		switch cmd {
+		case command.Ping:
+			return bot.PaperAirplane.ToGroup(groupOpenId).Reply(msgId, "pong")
+		case command.Chat:
+			return spark.Chat(groupOpenId, msgId, do.Content())
 		}
-		return bot.PaperAirplane.ToGroup(groupOpenId).Reply(msgId, res)
 	}
-
-	return nil
+	return bot.PaperAirplane.ToGroup(groupOpenId).Reply(msgId, "raw: "+do.RawContent())
 }

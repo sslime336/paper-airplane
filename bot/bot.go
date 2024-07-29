@@ -2,8 +2,12 @@ package bot
 
 import (
 	"os"
+	"paper-airplane/bot/command"
+	"paper-airplane/logging"
+	"strings"
 
 	"github.com/tencent-connect/botgo/openapi"
+	"go.uber.org/zap"
 )
 
 type PaperAirplaneBot struct {
@@ -36,4 +40,14 @@ func BuildClient(api openapi.OpenAPI) {
 		hostUrlTemplate.User = hostUser
 		hostUrlTemplate.Group = hostGroup
 	}
+}
+
+func (b *PaperAirplaneBot) ParseCommand(content string) (command.PaperAirplaneCommand, bool) {
+	ctnt := strings.TrimSpace(content)
+	logging.Debug("bot received message", zap.String("trimed-content", content))
+	fields := strings.Split(ctnt, " ")
+	logging.Debug("bot received message fields", zap.Strings("message-fields", fields))
+
+	cmd, ok := command.PaperAirplaneCommandMap[fields[0]]
+	return cmd, ok
 }

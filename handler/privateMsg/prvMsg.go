@@ -2,9 +2,17 @@ package prvMsg
 
 import (
 	"paper-airplane/bot"
+	"paper-airplane/logging"
 
 	"github.com/tencent-connect/botgo/dto"
+	"go.uber.org/zap"
 )
+
+var log *zap.Logger
+
+func Init() {
+	log = logging.Logger().Named("handler.group")
+}
 
 func Handler(event *dto.WSPayload, data []byte) error {
 	prvMsg := bot.ExtractPrivateChatMessage(data)

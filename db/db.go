@@ -22,7 +22,7 @@ func Init() {
 		logging.Fatal("failed to connect to database", zap.Error(err))
 	}
 	Sqlite = db
-	if err := Sqlite.AutoMigrate(); err != nil {
+	if err := Sqlite.AutoMigrate(&Session{}); err != nil {
 		logging.Fatal("migration failed", zap.Error(err))
 	}
 }

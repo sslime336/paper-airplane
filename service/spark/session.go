@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"net/url"
 	"paper-airplane/config"
+	"paper-airplane/db"
 	"paper-airplane/logging"
 	"paper-airplane/service/spark/req"
 	"paper-airplane/service/spark/resp"
@@ -20,6 +21,7 @@ import (
 
 	"github.com/gorilla/websocket"
 	"go.uber.org/zap"
+	"gorm.io/gorm"
 )
 
 // Session 代表一次与讯飞模型的会话
@@ -44,6 +46,7 @@ var log *zap.Logger
 
 func Init() {
 	log = logging.Logger().Named("spark.session")
+	initCache()
 }
 
 var ws = websocket.Dialer{
@@ -81,12 +84,11 @@ func (s *Session) Read() (string, error) {
 			return "", err
 		}
 
-		// 出错，具体原因对应官方文档
-		// https://www.xfyun.cn/doc/spark/%E6%98%9F%E7%81%AB%E5%BE%AE%E8%B0%83%E6%9C%8D%E5%8A%A1Web%E6%96%87%E6%A1%A3.html#_6-%E9%94%99%E8%AF%AF%E7%A0%81%E5%88%97%E8%A1%A8
 		if rsp.Header.Code != 0 {
 			log.Error("encountered error", zap.Int64("code", rsp.Header.Code))
-			return "", errors.New("response code not zero")
+			return "", ErrorCodeMap[rsp.Header.Code]
 		}
+
 		switch rsp.Header.Status {
 		case 0:
 			log.Debug("first session", zap.String("sid", rsp.Header.Sid))
@@ -158,12 +160,25 @@ func hmacWithShaTobase64(data, key string) string {
 	return base64.StdEncoding.EncodeToString(encodeData)
 }
 
-const (
-	HostUrlSparkLite = "wss://spark-api.xf-yun.com/v1.1/chat"
-)
+const HostUrlSparkLite = "wss://spark-api.xf-yun.com/v1.1/chat"
 
-func NewSparkSession() (*Session, error) {
-	session := new(Session)
+func NewSparkSession(openId string) (*Session, error) {
+	var session *Session
+	if sess, ok := sessionCache.Get(openId); ok {
+		session = sess.(*Session)
+	} else {
+		var msess db.Session
+		if err := db.Sqlite.Model(&db.Session{}).Find(&msess, "openId = ?", openId).Error; errors.Is(err, gorm.ErrRecordNotFound) {
+			session = &Session{}
+		} else {
+			session = &Session{
+				SystemContent: "",
+				Message:       req.Message{},
+			}
+			json.Unmarshal(msess.MessageHistory, &session.Message)
+		}
+		sessionCache.SetDefault(openId, session)
+	}
 
 	var resp *http.Response
 	var err error
