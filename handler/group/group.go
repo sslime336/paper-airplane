@@ -22,15 +22,12 @@ func Handler(event *dto.WSPayload, data []byte) error {
 
 	msgId := do.MsgId()
 	groupOpenId := do.GroupOpenId()
-	// memberOpenId := do.D.Author.MemberOpenid
 
 	if cmd, ok := bot.PaperAirplane.ParseCommand(do.RawContent()); ok {
 		switch cmd {
 		case command.Ping:
 			return bot.PaperAirplane.ToGroup(groupOpenId).Reply(msgId, "pong")
-		case command.Chat:
-			return spark.Chat(groupOpenId, msgId, do.Content())
 		}
 	}
-	return bot.PaperAirplane.ToGroup(groupOpenId).Reply(msgId, "raw: "+do.RawContent())
+	return spark.Chat(groupOpenId, msgId, do.RawContent())
 }

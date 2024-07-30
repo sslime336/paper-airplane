@@ -8,6 +8,7 @@ import (
 )
 
 func Chat(openId, msgId, msg string) error {
+	log.Debug("received chat message", zap.String("message", msg))
 	sess, err := NewSparkSession(openId)
 	if err != nil {
 		return err
