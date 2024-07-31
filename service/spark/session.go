@@ -10,16 +10,16 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"paper-airplane/config"
-	"paper-airplane/db"
-	"paper-airplane/logging"
-	"paper-airplane/service/spark/req"
-	"paper-airplane/service/spark/resp"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/gorilla/websocket"
+	"github.com/sslime336/paper-airplane/config"
+	"github.com/sslime336/paper-airplane/db"
+	"github.com/sslime336/paper-airplane/logging"
+	"github.com/sslime336/paper-airplane/service/spark/req"
+	"github.com/sslime336/paper-airplane/service/spark/resp"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
@@ -101,6 +101,13 @@ func (s *Session) Read() (string, error) {
 			log.Debug("middle session", zap.String("sid", rsp.Header.Sid))
 		case 2:
 			log.Debug("final session", zap.String("sid", rsp.Header.Sid))
+		}
+
+		totalToken := rsp.Payload.Usage.Text.TotalTokens
+
+		if totalToken > 0 {
+			// SparkLite 最多 Content token 数为 8192
+			log.Debug("total token", zap.Int64("totalToken", rsp.Payload.Usage.Text.TotalTokens))
 		}
 
 		currentContent := rsp.Payload.Choices.Text[0].Content

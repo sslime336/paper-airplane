@@ -1,9 +1,8 @@
 package prvMsg
 
 import (
-	"paper-airplane/bot"
-	"paper-airplane/logging"
-
+	"github.com/sslime336/paper-airplane/bot"
+	"github.com/sslime336/paper-airplane/logging"
 	"github.com/tencent-connect/botgo/dto"
 	"go.uber.org/zap"
 )

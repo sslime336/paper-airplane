@@ -2,9 +2,9 @@ package bot
 
 import (
 	"encoding/json"
-	"paper-airplane/logging"
-	"paper-airplane/model"
 
+	"github.com/sslime336/paper-airplane/logging"
+	"github.com/sslime336/paper-airplane/model"
 	"go.uber.org/zap"
 )
 

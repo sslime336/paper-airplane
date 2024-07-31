@@ -1,10 +1,12 @@
-module paper-airplane
+module github.com/sslime336/paper-airplane
 
 go 1.22.1
 
 require (
 	github.com/glebarez/sqlite v1.11.0
 	github.com/gorilla/websocket v1.5.3
+	github.com/mochi-mqtt/server/v2 v2.6.5
+	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/spf13/viper v1.19.0
 	github.com/tencent-connect/botgo v0.1.6
 	go.uber.org/zap v1.27.0
@@ -24,9 +26,9 @@ require (
 	github.com/magiconair/properties v1.8.7 // indirect
 	github.com/mattn/go-isatty v0.0.17 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
-	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
 	github.com/pelletier/go-toml/v2 v2.2.2 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
+	github.com/rs/xid v1.4.0 // indirect
 	github.com/sagikazarmark/locafero v0.6.0 // indirect
 	github.com/sagikazarmark/slog-shim v0.1.0 // indirect
 	github.com/sourcegraph/conc v0.3.0 // indirect

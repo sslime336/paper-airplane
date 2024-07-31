@@ -3,9 +3,9 @@ package logging
 import (
 	"log"
 	"os"
-	"paper-airplane/config"
-	"paper-airplane/global/utils"
 
+	"github.com/sslime336/paper-airplane/config"
+	"github.com/sslime336/paper-airplane/global/utils"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"gopkg.in/natefinch/lumberjack.v2"

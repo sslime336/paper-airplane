@@ -25,3 +25,12 @@ _✨ 基于 QQ 官方 SDK 开发的 QQBot ✨_
 ## Features
 
 - [x] SparkLite AI 接入
+
+
+## TODO
+
+- 会话 totalToken 超过清空历史数据
+- AIChat 添加 MQ
+
+
+*~~TODO这个东西啊，看上去就有一种魔力，只要加在文档里面那么写的东西就跟已经完成了一样(x~~*

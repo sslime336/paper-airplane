@@ -1,10 +1,9 @@
 package db
 
 import (
-	"paper-airplane/config"
-	"paper-airplane/logging"
-
 	"github.com/glebarez/sqlite"
+	"github.com/sslime336/paper-airplane/config"
+	"github.com/sslime336/paper-airplane/logging"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"

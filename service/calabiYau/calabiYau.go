@@ -2,3 +2,7 @@
 package calabiYau
 
 // 房间号是6位
+
+func Init() {
+
+}

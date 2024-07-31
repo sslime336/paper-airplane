@@ -2,8 +2,7 @@
 package spark
 
 import (
-	"paper-airplane/bot"
-
+	"github.com/sslime336/paper-airplane/bot"
 	"go.uber.org/zap"
 )
 

@@ -1,11 +1,10 @@
 package group
 
 import (
-	"paper-airplane/bot"
-	"paper-airplane/bot/command"
-	"paper-airplane/logging"
-	"paper-airplane/service/spark"
-
+	"github.com/sslime336/paper-airplane/bot"
+	"github.com/sslime336/paper-airplane/bot/command"
+	"github.com/sslime336/paper-airplane/logging"
+	"github.com/sslime336/paper-airplane/service/spark"
 	"github.com/tencent-connect/botgo/dto"
 	"go.uber.org/zap"
 )

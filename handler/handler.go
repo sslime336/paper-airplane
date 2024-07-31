@@ -2,11 +2,12 @@ package handler
 
 import (
 	"encoding/json"
-	myevnt "paper-airplane/handler/event"
-	"paper-airplane/handler/group"
-	prvMsg "paper-airplane/handler/privateMsg"
-	"paper-airplane/logging"
-	"paper-airplane/model"
+
+	myevnt "github.com/sslime336/paper-airplane/handler/event"
+	"github.com/sslime336/paper-airplane/handler/group"
+	prvMsg "github.com/sslime336/paper-airplane/handler/privateMsg"
+	"github.com/sslime336/paper-airplane/logging"
+	"github.com/sslime336/paper-airplane/model"
 
 	"github.com/tencent-connect/botgo/dto"
 	"github.com/tencent-connect/botgo/event"

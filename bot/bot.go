@@ -2,10 +2,10 @@ package bot
 
 import (
 	"os"
-	"paper-airplane/bot/command"
-	"paper-airplane/logging"
 	"strings"
 
+	"github.com/sslime336/paper-airplane/bot/command"
+	"github.com/sslime336/paper-airplane/logging"
 	"github.com/tencent-connect/botgo/openapi"
 	"go.uber.org/zap"
 )
