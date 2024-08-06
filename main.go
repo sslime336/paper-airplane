@@ -14,6 +14,7 @@ import (
 	"github.com/sslime336/paper-airplane/mq"
 	"github.com/sslime336/paper-airplane/service"
 	"github.com/tencent-connect/botgo"
+	"github.com/tencent-connect/botgo/openapi"
 	"github.com/tencent-connect/botgo/token"
 	"github.com/tencent-connect/botgo/websocket"
 	"go.uber.org/zap"
@@ -31,7 +32,12 @@ func init() {
 func main() {
 	conf := config.App.Bot
 	token := token.BotToken(conf.AppId, conf.Token)
-	api := botgo.NewSandboxOpenAPI(token).WithTimeout(3 * time.Second)
+	var api openapi.OpenAPI
+	if os.Getenv("AIRP_MODE") == "release" {
+		api = botgo.NewOpenAPI(token).WithTimeout(3 * time.Second)
+	} else {
+		api = botgo.NewSandboxOpenAPI(token).WithTimeout(3 * time.Second)
+	}
 	bot.BuildClient(api)
 
 	botgo.SetLogger(logging.Logger().Sugar())
