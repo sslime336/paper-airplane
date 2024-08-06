@@ -19,12 +19,12 @@ func Init() {
 
 	encoderConf := zap.NewDevelopmentEncoderConfig()
 	generalLevel := zap.LevelEnablerFunc(func(lev zapcore.Level) bool {
-		return lev < zap.ErrorLevel && lev >= zap.DebugLevel
+		return lev >= zap.DebugLevel
 	})
 	if os.Getenv("AIRP_MODE") == "release" {
 		encoderConf = zap.NewProductionEncoderConfig()
 		generalLevel = zap.LevelEnablerFunc(func(lev zapcore.Level) bool {
-			return lev < zap.ErrorLevel && lev >= zap.InfoLevel
+			return lev >= zap.InfoLevel
 		})
 	}
 	prepareEncoderConf(&encoderConf)
@@ -59,7 +59,7 @@ func Init() {
 	)
 	errorCore := zapcore.NewCore(
 		zapcore.NewConsoleEncoder(encoderConf),
-		zapcore.NewMultiWriteSyncer(errorSyncWriter, zapcore.AddSync(os.Stdout)),
+		zapcore.AddSync(errorSyncWriter),
 		zap.NewAtomicLevelAt(zap.ErrorLevel),
 	)
 
