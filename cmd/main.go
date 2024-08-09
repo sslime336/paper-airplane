@@ -41,7 +41,7 @@ func main() {
 	}
 	bot.BuildClient(api)
 
-	botgo.SetLogger(logging.Logger().Sugar())
+	botgo.SetLogger(logging.Named("bot.tencent.client").Sugar())
 
 	ws, err := api.WS(context.Background(), nil, "")
 	if err != nil {
