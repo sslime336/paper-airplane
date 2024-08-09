@@ -1,5 +1,7 @@
 package req
 
+import "sync"
+
 type Request struct {
 	Header    Header    `json:"header"`
 	Parameter Parameter `json:"parameter"`
@@ -40,8 +42,8 @@ type Message struct {
 	Text []Text `json:"text"`
 }
 
-func (msg *Message) Add(txt Text) {
-	msg.Text = append(msg.Text, txt)
+func (msg *Message) Add(role, content string) {
+	msg.Text = append(msg.Text, Text{Role: role, Content: content})
 }
 
 type Text struct {
@@ -54,24 +56,33 @@ type Text struct {
 	Content string `json:"content"`
 }
 
+var sparkLiteRequestPool = &sync.Pool{
+	New: func() any {
+		return &Request{
+			Header: Header{
+				AppID: "",
+			},
+			Parameter: Parameter{
+				Chat: Chat{
+					Domain:      "general",
+					Temperature: 0.8,
+					MaxTokens:   2048,
+					TopK:        6,
+					Auditing:    "default",
+				},
+			},
+			Payload: Payload{
+				Message: Message{
+					Text: []Text{},
+				},
+			},
+		}
+	},
+}
+
+// NewSparkLiteRequest 从对象池中拉取一个基于 SparkLite 模型的请求对象
 func NewSparkLiteRequest(appId string) *Request {
-	return &Request{
-		Header: Header{
-			AppID: appId,
-		},
-		Parameter: Parameter{
-			Chat: Chat{
-				Domain:      "general",
-				Temperature: 0.8,
-				MaxTokens:   2048,
-				TopK:        6,
-				Auditing:    "default",
-			},
-		},
-		Payload: Payload{
-			Message: Message{
-				Text: []Text{},
-			},
-		},
-	}
+	req := sparkLiteRequestPool.Get().(*Request)
+	req.Header.AppID = appId
+	return req
 }

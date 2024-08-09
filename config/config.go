@@ -7,10 +7,10 @@ import (
 )
 
 var App struct {
-	Bot      BotConf   `yaml:"bot"`
-	Log      LogConf   `yaml:"log"`
-	Spark    SparkConf `yaml:"spark"`
-	Database Database  `yaml:"database"`
+	Bot        BotConf    `yaml:"bot"`
+	Log        LogConf    `yaml:"log"`
+	Spark      SparkConf  `yaml:"spark"`
+	Database   Database   `yaml:"database"`
 }
 
 type Database struct {

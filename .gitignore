@@ -1,5 +1,7 @@
 build/
+dao/
 log/
+paper-airplane
 config.yaml
 *.exe
 *.db

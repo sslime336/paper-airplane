@@ -6,6 +6,7 @@ import (
 
 	"github.com/sslime336/paper-airplane/config"
 	"github.com/sslime336/paper-airplane/global/utils"
+	"github.com/sslime336/paper-airplane/keys"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"gopkg.in/natefinch/lumberjack.v2"
@@ -21,7 +22,7 @@ func Init() {
 	generalLevel := zap.LevelEnablerFunc(func(lev zapcore.Level) bool {
 		return lev >= zap.DebugLevel
 	})
-	if os.Getenv("AIRP_MODE") == "release" {
+	if os.Getenv(keys.BotMode) == "release" {
 		encoderConf = zap.NewProductionEncoderConfig()
 		generalLevel = zap.LevelEnablerFunc(func(lev zapcore.Level) bool {
 			return lev >= zap.InfoLevel
@@ -63,14 +64,15 @@ func Init() {
 		zap.NewAtomicLevelAt(zap.ErrorLevel),
 	)
 
-	logger = zap.New(zapcore.NewTee(consoleCore, generalCore, errorCore),
-		zap.AddCallerSkip(1),
-		zap.AddCaller(),
-	)
+	logger = zap.New(zapcore.NewTee(consoleCore, generalCore, errorCore), zap.AddCaller())
 }
 
 func Logger() *zap.Logger {
 	return logger
+}
+
+func Named(name string) *zap.Logger {
+	return logger.Named(name)
 }
 
 func initLogPath(path string) {

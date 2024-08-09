@@ -1,32 +1,25 @@
 package spark
 
 import (
-	"crypto/hmac"
-	"crypto/sha256"
-	"encoding/base64"
 	"encoding/json"
 	"errors"
-	"fmt"
-	"io"
 	"net/http"
-	"net/url"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/gorilla/websocket"
 	"github.com/sslime336/paper-airplane/config"
-	"github.com/sslime336/paper-airplane/db"
-	"github.com/sslime336/paper-airplane/logging"
+	"github.com/sslime336/paper-airplane/dao"
+	"github.com/sslime336/paper-airplane/db/orm"
 	"github.com/sslime336/paper-airplane/service/spark/req"
 	"github.com/sslime336/paper-airplane/service/spark/resp"
 	"go.uber.org/zap"
-	"gorm.io/gorm"
+	"gorm.io/gen/field"
 )
 
 // Session 代表一次与讯飞模型的会话
 type Session struct {
-	*websocket.Conn
+	*websocket.Conn `json:"-"`
 
 	// SystemContent 对话背景
 	// e.g. "你现在扮演李白，你豪情万丈，狂放不羁；接下来请用李白的口吻和用户对话。"
@@ -34,23 +27,57 @@ type Session struct {
 
 	// Message 包括所有的历史会话和新加入的会话
 	Message req.Message
+
+	TotalTokens int64
 }
 
-var ansPool = &sync.Pool{
-	New: func() any {
-		return &strings.Builder{}
-	},
+func (s *Session) JsonizedMessage() string {
+	data, _ := json.Marshal(s.Message)
+	return string(data)
 }
 
-var log *zap.Logger
+// TokenOverflow 判断是否超出最大token数
+func (s *Session) TokenOverflow() bool {
+	return s.TotalTokens > 8192
+}
 
-func Init() {
-	log = logging.Logger().Named("spark.session")
-	initCache()
+// ResetToken 清空历史token数，并刷新会话历史
+func (s *Session) ResetToken() {
+	s.TotalTokens = 0
+	s.Message = req.Message{}
 }
 
 var ws = websocket.Dialer{
 	HandshakeTimeout: 5 * time.Second,
+}
+
+func NewSparkSession(openId string) (*Session, error) {
+	var session *Session
+	if sess, ok := sessionCache.Get(openId); ok {
+		session = sess.(*Session)
+	} else {
+		session = &Session{}
+		if daoSession, err := dao.Session.Attrs(field.Attrs(&orm.Session{OpenId: openId, JsonizedHistory: "", TotalTokens: 0})).Where(dao.Session.OpenId.Eq(openId)).FirstOrInit(); err != nil {
+			return nil, err
+		} else {
+			session.TotalTokens = daoSession.TotalTokens
+			json.Unmarshal([]byte(daoSession.JsonizedHistory), &session.Message)
+			sessionCache.SetDefault(openId, session)
+		}
+	}
+
+	var resp *http.Response
+	var err error
+	session.Conn, resp, err = ws.Dial(authUrl, nil)
+	if err != nil {
+		log.Error("websocket to spark failed", zap.Error(err), zap.String("reason", readResp(resp)))
+		return nil, err
+	} else if resp.StatusCode != 101 {
+		log.Error("protocol switch to websocket failed", zap.Error(err), zap.String("reason", readResp(resp)))
+		return nil, errors.New("协议切换至 websocket 失败")
+	}
+
+	return session, nil
 }
 
 // Send 发送消息
@@ -59,14 +86,17 @@ func (s *Session) Send(msg string) error {
 
 	var err error
 	var resp *http.Response
-	if s.Conn, resp, err = ws.Dial(buildAuthUrl(HostUrlSparkLite, config.App.Spark.ApiKey, config.App.Spark.ApiSecret), nil); err != nil {
+	if s.Conn, resp, err = ws.Dial(authUrl, nil); err != nil {
 		log.Error("create websocket connection failed", zap.String("response", readResp(resp)), zap.Error(err))
 		return err
 	}
-	s.Message.Add(req.Text{
-		Role:    "user",
-		Content: msg,
-	})
+
+	if s.TokenOverflow() {
+		s.ResetToken()
+	}
+
+	s.Message.Add("user", msg)
+
 	r.Payload.Message.Text = append([]req.Text{}, s.Message.Text...)
 
 	log.Debug("build spark lite request", zap.Any("request", *r))
@@ -75,7 +105,7 @@ func (s *Session) Send(msg string) error {
 
 // Read 阻塞等待获取回答
 func (s *Session) Read() (string, error) {
-	answer := ansPool.Get().(*strings.Builder)
+	var answer strings.Builder
 	for {
 		_, msg, err := s.ReadMessage()
 		if err != nil {
@@ -83,7 +113,7 @@ func (s *Session) Read() (string, error) {
 			return "", err
 		}
 
-		rsp := resp.Response{}
+		var rsp resp.Response
 		if err := json.Unmarshal(msg, &rsp); err != nil {
 			log.Error("failed unmarshal response", zap.Error(err))
 			return "", err
@@ -104,11 +134,10 @@ func (s *Session) Read() (string, error) {
 		}
 
 		totalToken := rsp.Payload.Usage.Text.TotalTokens
+		s.TotalTokens += totalToken
 
-		if totalToken > 0 {
-			// SparkLite 最多 Content token 数为 8192
-			log.Debug("total token", zap.Int64("totalToken", rsp.Payload.Usage.Text.TotalTokens))
-		}
+		// SparkLite 最多 Content token 数为 8192
+		log.Debug("total token", zap.Int64("totalToken", rsp.Payload.Usage.Text.TotalTokens))
 
 		currentContent := rsp.Payload.Choices.Text[0].Content
 
@@ -123,96 +152,7 @@ func (s *Session) Read() (string, error) {
 
 	res := answer.String()
 
-	s.Message.Add(req.Text{
-		Role:    "assistant",
-		Content: res,
-	})
-
-	answer.Reset()
-	ansPool.Put(answer)
+	s.Message.Add("assistant", res)
 
 	return res, nil
-}
-
-// buildAuthUrl 创建需要的鉴权 URL
-func buildAuthUrl(hosturl string, apiKey, apiSecret string) string {
-	ul, err := url.Parse(hosturl)
-	if err != nil {
-		logging.Error("failed to parse Spark host url", zap.Error(err))
-		return ""
-	}
-	date := time.Now().UTC().Format(time.RFC1123)
-
-	signFields := []string{"host: " + ul.Host, "date: " + date, "GET " + ul.Path + " HTTP/1.1"}
-
-	sign := strings.Join(signFields, "\n")
-	logging.Debug("generate spark signature string", zap.String("sign", sign))
-
-	sha := hmacWithShaTobase64(sign, apiSecret)
-
-	logging.Debug("hmac with sha to base64", zap.String("base64", sha))
-
-	authUrl := fmt.Sprintf("hmac username=\"%s\", algorithm=\"%s\", headers=\"%s\", signature=\"%s\"", apiKey, "hmac-sha256", "host date request-line", sha)
-
-	authorization := base64.StdEncoding.EncodeToString([]byte(authUrl))
-
-	v := url.Values{}
-	v.Add("host", ul.Host)
-	v.Add("date", date)
-	v.Add("authorization", authorization)
-
-	callurl := hosturl + "?" + v.Encode()
-	return callurl
-}
-
-func hmacWithShaTobase64(data, key string) string {
-	mac := hmac.New(sha256.New, []byte(key))
-	mac.Write([]byte(data))
-	encodeData := mac.Sum(nil)
-	return base64.StdEncoding.EncodeToString(encodeData)
-}
-
-const HostUrlSparkLite = "wss://spark-api.xf-yun.com/v1.1/chat"
-
-func NewSparkSession(openId string) (*Session, error) {
-	var session *Session
-	if sess, ok := sessionCache.Get(openId); ok {
-		session = sess.(*Session)
-	} else {
-		var msess db.Session
-		if err := db.Sqlite.Model(&db.Session{}).Find(&msess, "openId = ?", openId).Error; errors.Is(err, gorm.ErrRecordNotFound) {
-			session = &Session{}
-		} else {
-			session = &Session{
-				SystemContent: "",
-				Message:       req.Message{},
-			}
-			json.Unmarshal(msess.MessageHistory, &session.Message)
-		}
-		sessionCache.SetDefault(openId, session)
-	}
-
-	var resp *http.Response
-	var err error
-	session.Conn, resp, err = ws.Dial(buildAuthUrl(HostUrlSparkLite, config.App.Spark.ApiKey, config.App.Spark.ApiSecret), nil)
-	if err != nil {
-		log.Error("websocket to spark failed", zap.Error(err), zap.String("reason", readResp(resp)))
-		return nil, err
-	} else if resp.StatusCode != 101 {
-		log.Error("websocket to spark failed, status code not 101", zap.Error(err), zap.String("reason", readResp(resp)))
-		return nil, errors.New("unexpected status code")
-	}
-
-	return session, nil
-}
-
-func readResp(resp *http.Response) string {
-	if resp == nil {
-		return ""
-	}
-	b, err := io.ReadAll(resp.Body)
-	if err != nil {
-		panic(err)
-	}
-	return fmt.Sprintf("code=%d,body=%s", resp.StatusCode, string(b))
 }

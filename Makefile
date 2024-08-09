@@ -1,19 +1,23 @@
-.DEFAULT_GOAL=paper-airplane
+.DEFAULT_GOAL=bot
 
-BUILD=paper-airplane.exe
+BUILD=paper-airplane
+AIRP_ENTRY="./cmd"
 
-paper-airplane:
-	go build -o $(BUILD) .
+bot:
+	go build -o $(BUILD) $(AIRP_ENTRY)
 
-run: paper-airplane
+run: bot
 	./$(BUILD)
 
+gen:
+	go run ./cmd/gen/gen.go
+
 release-linux-amd64:
-	GOOS=linux GOARCH=amd64 go build -o build/$(BUILD)
+	GOOS=linux GOARCH=amd64 go build -o build/$(BUILD) $(AIRP_ENTRY)
 
 clean:
 	rm -rf ./log
 	rm -rf ./build
 	rm -rf $(BUILD)
 
-.PHONY: run paper-airplane
+.PHONY: bot

@@ -3,7 +3,6 @@ package bot
 import (
 	"encoding/json"
 
-	"github.com/sslime336/paper-airplane/logging"
 	"github.com/sslime336/paper-airplane/model"
 	"go.uber.org/zap"
 )
@@ -11,7 +10,7 @@ import (
 func ExtractPrivateChatMessage(data []byte) *model.PrivateChatMessage {
 	var msg model.PrivateChatMessage
 	if err := json.Unmarshal(data, &msg); err != nil {
-		logging.Error("failed to unmarshal PrivateChatMessage", zap.Error(err))
+		log.Error("failed to unmarshal PrivateChatMessage", zap.Error(err))
 		return nil
 	}
 	return &msg
@@ -20,7 +19,7 @@ func ExtractPrivateChatMessage(data []byte) *model.PrivateChatMessage {
 func ExtractGroupMessage(data []byte) *model.GroupAtMessage {
 	var msg model.GroupAtMessage
 	if err := json.Unmarshal(data, &msg); err != nil {
-		logging.Error("failed to unmarshal GroupAtMessage", zap.Error(err))
+		log.Error("failed to unmarshal GroupAtMessage", zap.Error(err))
 		return nil
 	}
 	return &msg

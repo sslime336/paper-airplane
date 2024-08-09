@@ -3,8 +3,24 @@ package spark
 
 import (
 	"github.com/sslime336/paper-airplane/bot"
+	"github.com/sslime336/paper-airplane/config"
 	"go.uber.org/zap"
 )
+
+var log *zap.Logger
+
+func BindLogger(logger *zap.Logger) {
+	log = logger.Named("spark")
+}
+
+var authUrl string
+
+const HostUrlSparkLite = "wss://spark-api.xf-yun.com/v1.1/chat"
+
+func Init() {
+	authUrl = buildAuthUrl(HostUrlSparkLite, config.App.Spark.ApiKey, config.App.Spark.ApiSecret)
+	initSessionCache()
+}
 
 func Chat(openId, msgId, msg string) error {
 	log.Debug("received chat message", zap.String("message", msg))
