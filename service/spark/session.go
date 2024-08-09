@@ -68,7 +68,7 @@ func NewSparkSession(openId string) (*Session, error) {
 
 	var resp *http.Response
 	var err error
-	session.Conn, resp, err = ws.Dial(authUrl, nil)
+	session.Conn, resp, err = ws.Dial(AuthUrl(), nil)
 	if err != nil {
 		log.Error("websocket to spark failed", zap.Error(err), zap.String("reason", readResp(resp)))
 		return nil, err
@@ -86,7 +86,7 @@ func (s *Session) Send(msg string) error {
 
 	var err error
 	var resp *http.Response
-	if s.Conn, resp, err = ws.Dial(authUrl, nil); err != nil {
+	if s.Conn, resp, err = ws.Dial(AuthUrl(), nil); err != nil {
 		log.Error("create websocket connection failed", zap.String("response", readResp(resp)), zap.Error(err))
 		return err
 	}
