@@ -3,7 +3,6 @@ package db
 import (
 	"github.com/glebarez/sqlite"
 	"github.com/sslime336/paper-airplane/config"
-	"github.com/sslime336/paper-airplane/dao"
 	"github.com/sslime336/paper-airplane/db/orm"
 	"github.com/sslime336/paper-airplane/logging"
 	"go.uber.org/zap"
@@ -30,6 +29,4 @@ func Init() {
 	if err := Sqlite.AutoMigrate(orm.Models()...); err != nil {
 		log.Fatal("migration failed", zap.Error(err))
 	}
-
-	dao.SetDefault(db)
 }

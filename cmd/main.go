@@ -8,6 +8,7 @@ import (
 
 	"github.com/sslime336/paper-airplane/bot"
 	"github.com/sslime336/paper-airplane/config"
+	"github.com/sslime336/paper-airplane/dao"
 	"github.com/sslime336/paper-airplane/db"
 	"github.com/sslime336/paper-airplane/handler"
 	"github.com/sslime336/paper-airplane/keys"
@@ -24,6 +25,7 @@ func init() {
 	config.Init()
 	logging.Init()
 	db.Init()
+	dao.SetDefault(db.Sqlite)
 	handler.Init()
 	service.Init()
 }
