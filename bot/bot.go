@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/sslime336/paper-airplane/bot/botcmd"
+	"github.com/sslime336/paper-airplane/keys"
 	"github.com/sslime336/paper-airplane/logging"
 	"github.com/tencent-connect/botgo/openapi"
 	"go.uber.org/zap"
@@ -38,7 +39,7 @@ func BuildClient(api openapi.OpenAPI) {
 	hostUrlTemplate.User = hostUserSandbox
 	hostUrlTemplate.Group = hostGroupSandbox
 
-	if os.Getenv("BOT_MODE") == "release" {
+	if os.Getenv(keys.BotMode) == "release" {
 		hostUrlTemplate.User = hostUser
 		hostUrlTemplate.Group = hostGroup
 	}

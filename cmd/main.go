@@ -11,6 +11,7 @@ import (
 	"github.com/sslime336/paper-airplane/dao"
 	"github.com/sslime336/paper-airplane/db"
 	"github.com/sslime336/paper-airplane/handler"
+	"github.com/sslime336/paper-airplane/keys"
 	"github.com/sslime336/paper-airplane/logging"
 	"github.com/sslime336/paper-airplane/service"
 	"github.com/tencent-connect/botgo"
@@ -24,7 +25,7 @@ var log *zap.Logger
 
 func main() {
 	var devMode bool
-	if os.Getenv("BOT_MODE") == "release" {
+	if os.Getenv(keys.BotMode) == "release" {
 		devMode = true
 	}
 	conf := config.ParseConfig[config.App]("./config.yaml")
