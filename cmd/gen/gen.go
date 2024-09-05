@@ -4,14 +4,12 @@ import (
 	"github.com/sslime336/paper-airplane/config"
 	"github.com/sslime336/paper-airplane/db"
 	"github.com/sslime336/paper-airplane/db/orm"
-	"github.com/sslime336/paper-airplane/logging"
 	"gorm.io/gen"
 )
 
 func init() {
-	config.Init()
-	logging.Init()
-	db.Init()
+	conf := config.ParseConfig[config.App]("./config.yaml")
+	db.Init(&conf)
 }
 
 func main() {

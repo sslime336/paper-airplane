@@ -7,7 +7,7 @@ import (
 	"github.com/sslime336/paper-airplane/handler/group"
 	prvMsg "github.com/sslime336/paper-airplane/handler/privateMsg"
 	"github.com/sslime336/paper-airplane/logging"
-	"github.com/sslime336/paper-airplane/model"
+	"github.com/sslime336/paper-airplane/ws"
 
 	"github.com/tencent-connect/botgo/dto"
 	"github.com/tencent-connect/botgo/event"
@@ -25,7 +25,7 @@ func Init() {
 
 func Get() event.PlainEventHandler {
 	return func(payload *dto.WSPayload, data []byte) error {
-		var g model.General
+		var g ws.General
 		if err := json.Unmarshal(data, &g); err != nil {
 			log.Error("failed to decode json", zap.Error(err))
 			return nil

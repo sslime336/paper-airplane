@@ -14,10 +14,10 @@ var Sqlite *gorm.DB
 
 var log *zap.Logger
 
-func Init() {
+func Init(config *config.App) {
 	log = logging.Named("db")
 
-	db, err := gorm.Open(sqlite.Open(config.App.Database.Sqlite.Path), &gorm.Config{
+	db, err := gorm.Open(sqlite.Open(config.Database.Sqlite.Path), &gorm.Config{
 		NamingStrategy: schema.NamingStrategy{
 			SingularTable: true,
 		},

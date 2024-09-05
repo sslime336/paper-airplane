@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
-	"github.com/sslime336/paper-airplane/config"
 	"github.com/sslime336/paper-airplane/dao"
 	"github.com/sslime336/paper-airplane/db/orm"
 	"github.com/sslime336/paper-airplane/service/spark/req"
@@ -68,7 +67,7 @@ func NewSparkSession(openId string) (*Session, error) {
 
 	var resp *http.Response
 	var err error
-	session.Conn, resp, err = ws.Dial(AuthUrl(), nil)
+	session.Conn, resp, err = ws.Dial(authUrl(), nil)
 	if err != nil {
 		log.Error("websocket to spark failed", zap.Error(err), zap.String("reason", readResp(resp)))
 		return nil, err
@@ -80,13 +79,15 @@ func NewSparkSession(openId string) (*Session, error) {
 	return session, nil
 }
 
+var createSparkLiteRequest func() *req.Request
+
 // Send 发送消息
 func (s *Session) Send(msg string) error {
-	r := req.NewSparkLiteRequest(config.App.Spark.AppId)
+	r := createSparkLiteRequest()
 
 	var err error
 	var resp *http.Response
-	if s.Conn, resp, err = ws.Dial(AuthUrl(), nil); err != nil {
+	if s.Conn, resp, err = ws.Dial(authUrl(), nil); err != nil {
 		log.Error("create websocket connection failed", zap.String("response", readResp(resp)), zap.Error(err))
 		return err
 	}

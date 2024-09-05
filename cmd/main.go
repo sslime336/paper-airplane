@@ -11,7 +11,6 @@ import (
 	"github.com/sslime336/paper-airplane/dao"
 	"github.com/sslime336/paper-airplane/db"
 	"github.com/sslime336/paper-airplane/handler"
-	"github.com/sslime336/paper-airplane/keys"
 	"github.com/sslime336/paper-airplane/logging"
 	"github.com/sslime336/paper-airplane/service"
 	"github.com/tencent-connect/botgo"
@@ -21,28 +20,32 @@ import (
 	"go.uber.org/zap"
 )
 
-func init() {
-	config.Init()
-	logging.Init()
-	db.Init()
-	dao.SetDefault(db.Sqlite)
-	handler.Init()
-	service.Init()
-}
+var log *zap.Logger
 
 func main() {
-	log := logging.Named("init")
-
-	conf := config.App.Bot
-	token := token.BotToken(conf.AppId, conf.Token)
-	var api openapi.OpenAPI
-	if os.Getenv(keys.BotMode) == "release" {
-		api = botgo.NewOpenAPI(token).WithTimeout(3 * time.Second)
-	} else {
-		api = botgo.NewSandboxOpenAPI(token).WithTimeout(3 * time.Second)
+	var devMode bool
+	if os.Getenv("BOT_MODE") == "release" {
+		devMode = true
 	}
-	bot.BuildClient(api)
+	conf := config.ParseConfig[config.App]("./config.yaml")
+	logging.Init(conf.Log.Path, "bot.log", devMode)
+	db.Init(&conf)
+	dao.SetDefault(db.Sqlite)
+	handler.Init()
+	service.Init(&conf)
+	log = logging.Named("bot.init")
 
+	token := token.BotToken(conf.Bot.AppId, conf.Bot.Token)
+	log.Info("bot start", zap.String("token", token.GetString()))
+
+	var api openapi.OpenAPI
+	if devMode {
+		api = botgo.NewSandboxOpenAPI(token).WithTimeout(3 * time.Second)
+	} else {
+		api = botgo.NewOpenAPI(token).WithTimeout(3 * time.Second)
+	}
+
+	bot.BuildClient(api)
 	botgo.SetLogger(logging.Named("bot.tencent.client").WithOptions(zap.AddCallerSkip(1)).Sugar())
 
 	ws, err := api.WS(context.Background(), nil, "")

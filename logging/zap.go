@@ -1,12 +1,11 @@
 package logging
 
 import (
+	"io/fs"
 	"log"
 	"os"
+	"path/filepath"
 
-	"github.com/sslime336/paper-airplane/config"
-	"github.com/sslime336/paper-airplane/global/utils"
-	"github.com/sslime336/paper-airplane/keys"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"gopkg.in/natefinch/lumberjack.v2"
@@ -14,45 +13,49 @@ import (
 
 var logger *zap.Logger
 
-func Init() {
-	localLogPath := config.App.Log.Path
-	initLogPath(localLogPath)
+func Init(logPath, logFile string, devMode bool) {
+	if err := os.MkdirAll(logPath, fs.ModeDir); err != nil {
+		log.Fatalf("create log dir failed: %v", err)
+	}
+	logUrl := filepath.Join(logPath, logFile)
+	_, err := os.OpenFile(logUrl, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	if err != nil {
+		log.Fatalf("could not open log file: %v", err)
+	}
 
 	encoderConf := zap.NewDevelopmentEncoderConfig()
 	generalLevel := zap.LevelEnablerFunc(func(lev zapcore.Level) bool {
 		return lev >= zap.DebugLevel
 	})
-	if os.Getenv(keys.BotMode) == "release" {
+	if !devMode {
 		encoderConf = zap.NewProductionEncoderConfig()
 		generalLevel = zap.LevelEnablerFunc(func(lev zapcore.Level) bool {
 			return lev >= zap.InfoLevel
 		})
 	}
-	prepareEncoderConf(&encoderConf)
 
+	prepareEncoderConf(&encoderConf)
 	consoleCore := zapcore.NewCore(
 		zapcore.NewConsoleEncoder(encoderConf),
 		zapcore.AddSync(os.Stdout),
 		generalLevel,
 	)
-
 	generalSyncWriter := zapcore.AddSync(&lumberjack.Logger{
-		Filename:   "./log/bot.log",
+		Filename:   logUrl,
 		MaxSize:    1024, // 1GiB
 		MaxBackups: 2,
 		MaxAge:     30,
 		Compress:   true,
 	})
 	errorSyncWriter := zapcore.AddSync(&lumberjack.Logger{
-		Filename:   "./log/error.log",
+		Filename:   filepath.Join(logPath, "error.log"),
 		MaxSize:    500,
 		MaxBackups: 2,
 		MaxAge:     30,
 		Compress:   false,
 	})
-
+	// Disable colorful logging.
 	encoderConf.EncodeLevel = zapcore.CapitalLevelEncoder
-
 	generalCore := zapcore.NewCore(
 		zapcore.NewConsoleEncoder(encoderConf),
 		zapcore.AddSync(generalSyncWriter),
@@ -63,7 +66,6 @@ func Init() {
 		zapcore.AddSync(errorSyncWriter),
 		zap.NewAtomicLevelAt(zap.ErrorLevel),
 	)
-
 	logger = zap.New(zapcore.NewTee(consoleCore, generalCore, errorCore), zap.AddCaller())
 }
 
@@ -73,17 +75,6 @@ func Logger() *zap.Logger {
 
 func Named(name string) *zap.Logger {
 	return logger.Named(name)
-}
-
-func initLogPath(path string) {
-	if exist, err := utils.PathExists(path); exist {
-		return
-	} else if err != nil {
-		log.Fatal("could not init log path", err)
-	}
-	if err := os.Mkdir(path, 0644); err != nil {
-		log.Fatal("failed to make log path", err)
-	}
 }
 
 func prepareEncoderConf(encoderConfig *zapcore.EncoderConfig) {

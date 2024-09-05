@@ -15,7 +15,7 @@ func Init() {
 
 func Handler(event *dto.WSPayload, data []byte) error {
 	prvMsg := bot.ExtractPrivateChatMessage(data)
-	return bot.PaperAirplane.
+	return bot.MyBot.
 		ToUser(prvMsg.UserOpenId()).
 		Reply(prvMsg.MsgId(), "复读: "+prvMsg.Content())
 }

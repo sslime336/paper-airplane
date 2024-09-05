@@ -4,23 +4,24 @@ package spark
 import (
 	"github.com/sslime336/paper-airplane/bot"
 	"github.com/sslime336/paper-airplane/config"
+	"github.com/sslime336/paper-airplane/service/spark/req"
 	"go.uber.org/zap"
 )
 
 var log *zap.Logger
-
-func BindLogger(logger *zap.Logger) {
-	log = logger.Named("spark")
-}
+var authUrl func() string
 
 const HostUrlSparkLite = "wss://spark-api.xf-yun.com/v1.1/chat"
 
-func AuthUrl() string {
-	return buildAuthUrl(HostUrlSparkLite, config.App.Spark.ApiKey, config.App.Spark.ApiSecret)
-}
-
-func Init() {
+func Init(conf *config.App, logger *zap.Logger) {
 	initSessionCache()
+	log = logger.Named("spark")
+	authUrl = func() string {
+		return buildAuthUrl(HostUrlSparkLite, conf.Spark.ApiKey, conf.Spark.ApiSecret)
+	}
+	createSparkLiteRequest = func() *req.Request {
+		return req.NewSparkLiteRequest(conf.Spark.AppId)
+	}
 }
 
 func Chat(openId, msgId, msg string) error {
@@ -32,12 +33,12 @@ func Chat(openId, msgId, msg string) error {
 
 	if err := sess.Send(msg); err != nil {
 		log.Error("send message failed", zap.Error(err))
-		return bot.PaperAirplane.ToGroup(openId).Reply(msgId, err.Error())
+		return bot.MyBot.ToGroup(openId).Reply(msgId, err.Error())
 	}
 	res, err := sess.Read()
 	if err != nil {
 		log.Error("read from spark failed", zap.Error(err))
-		return bot.PaperAirplane.ToGroup(openId).Reply(msgId, err.Error())
+		return bot.MyBot.ToGroup(openId).Reply(msgId, err.Error())
 	}
-	return bot.PaperAirplane.ToGroup(openId).Reply(msgId, res)
+	return bot.MyBot.ToGroup(openId).Reply(msgId, res)
 }

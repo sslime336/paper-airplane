@@ -1,5 +1,5 @@
 <p align="center">
-    <img src="avatar.png" width="200" height="200" alt="paper-airplane" style="border-radius: 40px 40px 40px 40px;">
+    <img src="misc/avatar.png" width="200" height="200" alt="paper-airplane" style="border-radius: 40px 40px 40px 40px;">
 </p>
 
 <div align="center">

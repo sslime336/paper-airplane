@@ -1,6 +1,6 @@
 module github.com/sslime336/paper-airplane
 
-go 1.22.1
+go 1.23
 
 require (
 	github.com/glebarez/sqlite v1.11.0

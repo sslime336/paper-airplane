@@ -4,14 +4,13 @@ import (
 	"os"
 	"strings"
 
-	"github.com/sslime336/paper-airplane/bot/command"
-	"github.com/sslime336/paper-airplane/keys"
+	"github.com/sslime336/paper-airplane/bot/botcmd"
 	"github.com/sslime336/paper-airplane/logging"
 	"github.com/tencent-connect/botgo/openapi"
 	"go.uber.org/zap"
 )
 
-type PaperAirplaneBot struct {
+type Bot struct {
 	openapi.OpenAPI
 	hostUrl string
 }
@@ -21,7 +20,7 @@ var hostUrlTemplate struct {
 	Group string
 }
 
-var PaperAirplane *PaperAirplaneBot
+var MyBot *Bot
 
 var log *zap.Logger
 
@@ -33,26 +32,26 @@ const (
 )
 
 func BuildClient(api openapi.OpenAPI) {
-	PaperAirplane = new(PaperAirplaneBot)
-	PaperAirplane.OpenAPI = api
+	MyBot = new(Bot)
+	MyBot.OpenAPI = api
 
 	hostUrlTemplate.User = hostUserSandbox
 	hostUrlTemplate.Group = hostGroupSandbox
 
-	if os.Getenv(keys.BotMode) == "release" {
+	if os.Getenv("BOT_MODE") == "release" {
 		hostUrlTemplate.User = hostUser
 		hostUrlTemplate.Group = hostGroup
 	}
-	
+
 	log = logging.Named("bot")
 }
 
-func (b *PaperAirplaneBot) ParseCommand(content string) (command.PaperAirplaneCommand, bool) {
+func (b *Bot) ParseCommand(content string) (botcmd.Command, bool) {
 	ctnt := strings.TrimSpace(content)
 	log.Debug("bot received message", zap.String("trimed-content", content))
 	fields := strings.Split(ctnt, " ")
 	log.Debug("bot received message fields", zap.Strings("message-fields", fields))
 
-	cmd, ok := command.PaperAirplaneCommandMap[fields[0]]
+	cmd, ok := botcmd.CommandMap[fields[0]]
 	return cmd, ok
 }
